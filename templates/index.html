@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="logo">TaskFlow<span>.</span></div>
+
+        <p class="nav-heading">WORKSPACE</p>
+
+        <a href="/" class="nav-item active">▦ Dashboard</a>
+        <a href="#tasks" class="nav-item">☑ My Tasks</a>
+        <a href="#add-task" class="nav-item">＋ Add Task</a>
+
+        <div class="sidebar-bottom">
+            <div class="profile">
+                <div class="avatar">E</div>
+                <div>
+                    <strong>My Workspace</strong>
+                    <small>Personal account</small>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">WORKSPACE / OVERVIEW</p>
+                <h1>My Dashboard</h1>
+                <p class="subtitle">Welcome back! Here's your productivity overview.</p>
+            </div>
+            <div class="date" id="current-date"></div>
+        </header>
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <p>Total Tasks</p>
+                <h2>{{ total }}</h2>
+                <span>All your tasks</span>
+            </div>
+
+            <div class="stat-card">
+                <p>Completed</p>
+                <h2>{{ completed }}</h2>
+                <span>Successfully finished</span>
+            </div>
+
+            <div class="stat-card">
+                <p>Pending</p>
+                <h2>{{ pending }}</h2>
+                <span>Still in progress or to do</span>
+            </div>
+
+        </section>
+        
+        <section class="analytics-card">
+
+            <div class="analytics-header">
+                <div>
+                    <h2>Productivity Overview</h2>
+                    <p>Your overall task completion progress.</p>
+                </div>
+
+                <span class="completion-label">
+                    {{ completion_rate }}%
+                </span>
+            </div>
+
+            <div class="progress-track">
+                <div
+                    class="progress-fill"
+                    style="width: {{ completion_rate }}%;">
+                </div>
+            </div>
+
+            <div class="analytics-breakdown">
+
+                <div>
+                    <span class="dot completed-dot"></span>
+                    Completed: {{ completed }}
+                </div>
+
+                <div>
+                    <span class="dot progress-dot"></span>
+                    In Progress: {{ in_progress }}
+                </div>
+
+                <div>
+                    <span class="dot pending-dot"></span>
+                    To Do: {{ pending }}
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="content-grid">
+
+            <div class="task-section" id="tasks">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Your Tasks</h2>
+                        <p>Manage and track your daily activities.</p>
+                    </div>
+                </div>
+
+                <div class="filters">
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search tasks..."
+                    >
+
+                    <select id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+
+                    <select id="priorityFilter">
+                        <option value="all">All Priorities</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+
+                </div>
+
+                {% if tasks %}
+
+                    {% for task in tasks %}
+
+                    <div class="task-card"
+                        data-title="{{ task.title|lower }}"
+                        data-status="{{ task.status }}"
+                        data-priority="{{ task.priority }}">
+
+                        <div class="task-info">
+                            <h3>{{ task.title }}</h3>
+                            <p>{{ task.description or "No description provided." }}</p>
+
+                            <div class="task-meta">
+                                <span class="priority {{ task.priority|lower }}">
+                                    {{ task.priority }} Priority
+                                </span>
+
+                                {% if task.due_date %}
+                                <span class="due-date">
+                                    Due: {{ task.due_date }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="task-actions">
+                            <a href="/edit/{{ task.id }}" class="edit-btn">
+                                Edit
+                            </a>
+
+                            <form action="/update/{{ task.id }}" method="POST">
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="To Do" {% if task.status == 'To Do' %}selected{% endif %}>To Do</option>
+                                    <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                </select>
+                            </form>
+
+                            <form action="/delete/{{ task.id }}" method="POST"
+                                  onsubmit="return confirm('Delete this task?')">
+                                <button class="delete-btn" type="submit">Delete</button>
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-state">
+                        <div class="empty-icon">☑</div>
+                        <h3>No tasks yet</h3>
+                        <p>Create your first task to get started.</p>
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="add-section" id="add-task">
+
+                <h2>Create a Task</h2>
+                <p>Add something new to your workspace.</p>
+
+                <form action="/add" method="POST" class="task-form">
+
+                    <label>Task Title</label>
+                    <input type="text" name="title" placeholder="e.g. Complete project" maxlength="120" required>
+
+                    <label>Description</label>
+                    <textarea name="description" placeholder="What needs to be done?" maxlength="1000"></textarea>
+
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+
+                    <label>Due Date</label>
+                    <input type="date" name="due_date">
+
+                    <button type="submit" class="submit-btn">+ Create Task</button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

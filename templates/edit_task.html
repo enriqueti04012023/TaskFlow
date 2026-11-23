@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task | TaskFlow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <main class="main">
+        <div class="add-section" style="max-width:600px; margin:auto;">
+            <h2>Edit Task</h2>
+            <p>Update your task details below.</p>
+
+            <form method="POST" class="task-form">
+
+                <label>Task Title</label>
+                <input type="text" name="title"
+                       value="{{ task.title }}" maxlength="120" required>
+
+                <label>Description</label>
+                <textarea name="description" maxlength="1000">{{ task.description or '' }}</textarea>
+
+                <label>Priority</label>
+                <select name="priority">
+                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                </select>
+
+                <label>Due Date</label>
+                <input type="date" name="due_date" value="{{ task.due_date or '' }}">
+
+                <button type="submit" class="submit-btn">Save Changes</button>
+
+                <a href="/" style="text-align:center; color:#586bdc; text-decoration:none; font-size:13px;">
+                    Cancel and return
+                </a>
+
+            </form>
+        </div>
+    </main>
+</body>
+</html>
